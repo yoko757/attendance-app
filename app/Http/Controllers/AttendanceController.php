@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Http\Requests\UpdateAttendanceRequest;
 use App\Models\AttendanceRecord;
 use App\Models\BreakTime;
 use App\Models\AttendanceRequest;
@@ -176,18 +177,8 @@ $attendanceRequest = AttendanceRequest::where('attendance_record_id', $id)
 
 return view('user.user-detail', compact('data', 'user', 'attendanceRequest'));
 }
-public function update(Request $request, $id)
+public function update(UpdateAttendanceRequest $request, $id)
 {
-
-$request->validate([
-    'new_clock_in' => 'required|date_format:H:i',
-    'new_clock_out' => 'required|date_format:H:i|after:new_clock_in',
-    'new_break_in.*' => 'nullable|date_format:H:i|required_with:new_break_out.*',
-    'new_break_out.*' => 'nullable|date_format:H:i|required_with:new_break_in.*|after:new_break_in.*',
-], [
-    'new_clock_out.after' => '退勤時間は出勤時間より後にしてください。',
-    'new_break_out.*.after' => '休憩終了時間は休憩開始時間より後にしてください。',
-]);
 
    $attendance = AttendanceRecord::findOrFail($id);
 

@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Http\Requests\Api\V1\StoreAttendanceRecordRequest;
+use App\Http\Resources\AttendanceRecordResource;
 
 class AttendanceRecordController extends Controller
 {
@@ -28,43 +30,27 @@ class AttendanceRecordController extends Controller
 
     $perPage = min(100, max(1, (int) $request->input('per_page', 20)));
 
-    return response()->json(
-        $query->orderBy('date', 'desc')->paginate($perPage)
-    );
+    $attendances = $query->orderBy('date', 'desc')->paginate($perPage);
+    
+    return response()->json([
+    'data' => AttendanceRecordResource::collection($attendances->items()),
+    'meta' => [
+        'current_page' => $attendances->currentPage(),
+        'last_page' => $attendances->lastPage(),
+        'per_page' => $attendances->perPage(),
+        'total' => $attendances->total(),
+    ],
+]);
 }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreAttendanceRecordRequest $request)
 {
-    $validated = $request->validate([
-    'user_id' => ['required', 'integer', 'exists:users,id'],
-    'date' => ['required', 'date_format:Y-m-d'],
-    'clock_in' => ['required', 'date_format:H:i:s'],
-    'clock_out' => ['nullable', 'date_format:H:i:s', 'after:clock_in'],
-    'comment' => ['nullable', 'string', 'max:1000'],
-], [
-    'required' => ':attributeは必須です。',
-    'integer' => ':attributeは整数で入力してください。',
-    'exists' => '指定された:attributeは存在しません。',
-    'date_format' => ':attributeの形式が正しくありません。',
-    'after' => ':attributeは出勤時間より後にしてください。',
-    'string' => ':attributeは文字列で入力してください。',
-    'max' => ':attributeは1000文字以内で入力してください。',
-], [
-    'user_id' => 'ユーザーID',
-    'date' => '日付',
-    'clock_in' => '出勤時間',
-    'clock_out' => '退勤時間',
-    'comment' => '備考',
-]);
-    if (
-        $request->user()->role !== 'admin' &&
-        (int) $validated['user_id'] !== (int) $request->user()->id
-) {
-    abort(403, '他の利用者の勤怠記録は登録できません。');
-}
+    $validated = $request->validated();
+    $validated['user_id'] = $request->user()->id;
+    
     $attendance = \App\Models\AttendanceRecord::create($validated);
 
     return response()->json($attendance, 201);
@@ -79,9 +65,13 @@ class AttendanceRecordController extends Controller
         'user',
         'breakTimes',
         'attendanceRequests',
-    ])->findOrFail($attendanceRecord);
-
-    return response()->json($attendance);
+    ])->find($attendanceRecord);
+if (!$attendance) {
+    return response()->json([
+        'error' => '勤怠情報が見つかりませんでした。',
+    ], 404);
+}
+    return new AttendanceRecordResource($attendance);
 }
 
     /**
@@ -118,7 +108,13 @@ class AttendanceRecordController extends Controller
      */
     public function destroy(string $id)
 {
-    $attendance = \App\Models\AttendanceRecord::findOrFail($id);
+    $attendance = \App\Models\AttendanceRecord::find($id);
+
+if (!$attendance) {
+    return response()->json([
+        'message' => '勤怠記録が見つかりません。'
+    ], 404);
+}
 
     $user = request()->user();
 

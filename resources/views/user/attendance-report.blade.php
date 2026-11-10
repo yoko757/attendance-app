@@ -12,8 +12,7 @@
     $monthlyReports = [];
 
     for ($i = 5; $i >= 0; $i--) {
-        $month = now()->subMonths($i)->format('Y-m');
-
+        $month = now()->startOfMonth()->subMonths($i)->format('Y-m');
         $monthlyReports[$month] = [
             'total_minutes' => 0,
             'overtime_minutes' => 0,
@@ -65,7 +64,31 @@
         }
     }
     unset($report);
+    $totalWorkMinutes = array_sum(
+    array_column($monthlyReports, 'total_minutes')
+);
+    $totalOvertimeMinutes = array_sum(
+    array_column($monthlyReports, 'overtime_minutes')
+);
+    $totalWorkDays = array_sum(
+    array_column($monthlyReports, 'work_days')
+);
+
+    $averageWorkMinutes = $totalWorkDays > 0
+    ? (int) round($totalWorkMinutes / $totalWorkDays)
+    : 0;
 @endphp
+<h2>過去6か月の基本サマリー</h2>
+
+<p>総労働時間：
+    {{ sprintf('%d:%02d', intdiv($totalWorkMinutes, 60), $totalWorkMinutes % 60) }}
+</p>
+<p>総残業時間：
+    {{ sprintf('%d:%02d', intdiv($totalOvertimeMinutes, 60), $totalOvertimeMinutes % 60) }}
+</p>
+<p>平均労働時間：
+    {{ sprintf('%d:%02d', intdiv($averageWorkMinutes, 60), $averageWorkMinutes % 60) }}
+</p>
 <h2>月別勤怠集計</h2>
 
 <table border="1" cellpadding="10">

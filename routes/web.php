@@ -51,6 +51,9 @@ Route::get('/stamp_correction_request/list', [AttendanceController::class, 'requ
 Route::get('/application/{id}', [AttendanceController::class, 'requestDetail'])
     ->middleware('auth');
 
+Route::get('/stamp_correction_request/approve/{id}', [AdminController::class, 'requestDetail'])
+    ->middleware('auth');
+
 Route::post('/stamp_correction_request/approve/{id}', [AdminController::class, 'approve'])
     ->middleware('auth');
 
@@ -111,8 +114,5 @@ Route::post('/email/verification-notification', function (\Illuminate\Http\Reque
 })->middleware(['auth', 'throttle:6,1'])
   ->name('verification.send');
 
-Route::get('/attendance/report', [
-    AttendanceController::class,
-    'report'
-])->middleware(['auth', 'verified']);
+
 

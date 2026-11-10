@@ -1,13 +1,13 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use App\Http\Requests\AdminAttendanceRequest;
 use App\Models\AttendanceRecord;
 use App\Models\AttendanceRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-
+use App\Http\Requests\ExportAttendanceRequest;
 
 class AdminController extends Controller
 {
@@ -141,17 +141,8 @@ public function attendanceDetail($id)
 
     return view('admin.admin-detail', compact('attendance', 'user'));
 }
-public function attendanceUpdate(Request $request, $id)
+public function attendanceUpdate(AdminAttendanceRequest $request, $id)
 {
-
-$request->validate([
-    'new_clock_in' => 'required|date_format:H:i',
-    'new_clock_out' => 'required|date_format:H:i|after:new_clock_in',
-    'new_break_in.*' => 'nullable|date_format:H:i|required_with:new_break_out.*',
-    'new_break_out.*' => 'nullable|date_format:H:i|required_with:new_break_in.*',
-    'new_break_in' => 'array',
-    'new_break_out' => 'array',
-]);
 
 $newBreakIns = $request->input('new_break_in', []);
 
@@ -290,13 +281,8 @@ public function staffAttendanceList(\Illuminate\Http\Request $request, $id)
             'user', 'date', 'previousMonth', 'nextMonth', 'formattedAttendanceRecords'
         ));
     }
- public function export(Request $request)
+ public function export(ExportAttendanceRequest $request)
 {
-    $request->validate([
-        'user_id' => 'required|integer|exists:users,id',
-        'year_month' => 'required|date_format:Y-m',
-    ]);
-
     $userId = $request->input('user_id');
     $month = \Carbon\Carbon::createFromFormat(
         '!Y-m',

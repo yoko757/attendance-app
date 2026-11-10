@@ -164,7 +164,9 @@
                 </div>
 
                 <div class="form__button">
-                    <p class="readonly-message">承認待ちのため修正できません</p>
+                    <p class="readonly-message">
+    {{ $attendanceRequest->status === '承認済み' ? '承認済みです' : '承認待ちのため修正できません' }}
+</p>
                 </div>
             @endif
 
