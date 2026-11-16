@@ -48,6 +48,17 @@ Git / GitHub
 
 git clone git@github.com:yoko757/attendance-app.git
 cd attendance-app
+cp .env.example .env
+
+.env のデータベース設定を以下のように変更します。
+
+DB_CONNECTION=mysql
+DB_HOST=mysql
+DB_PORT=3306
+DB_DATABASE=laravel
+DB_USERNAME=sail
+
+docker run --rm -v "$(pwd):/app" -w /app composer:2 install --ignore-platform-reqs
 
 2. Dockerコンテナを起動
 
@@ -55,24 +66,17 @@ docker compose up -d
 
 3. Laravelの設定
 
-cd src
-cp .env.example .env
-composer install
-php artisan key:generate
+./vendor/bin/sail artisan key:generate
 
-4. データベースの設定
+4. マイグレーション
 
-.env にMySQLの接続情報を設定します。
-
-5. マイグレーション
-
-php artisan migrate
+./vendor/bin/sail artisan migrate
 
 テスト
 
 PHPUnitを使用して、勤怠APIなどのテストを実行します。
 
-php artisan test
+./vendor/bin/sail artisan test
 
 GitHub
 
