@@ -163,5 +163,20 @@
             @endforelse
         </tbody>
     </table>
+    <h2>今月の異常検知</h2>
+
+@php
+    $currentMonth = now()->format('Y-m');
+
+    $currentReport = $monthlyReports[$currentMonth] ?? [
+        'late_count' => 0,
+        'early_count' => 0,
+        'long_work_count' => 0,
+    ];
+@endphp
+
+<p>遅刻回数：{{ $currentReport['late_count'] }} 回</p>
+<p>早退回数：{{ $currentReport['early_count'] }} 回</p>
+<p>長時間労働日数：{{ $currentReport['long_work_count'] }} 日</p>
 </body>
 </html>
