@@ -32,7 +32,7 @@ Laravelを使用して作成した勤怠管理アプリです。
 
 PHP
 
-Laravel 8
+Laravel 10
 
 MySQL 8
 
